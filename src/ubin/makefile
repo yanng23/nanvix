@@ -42,10 +42,16 @@
 .PHONY: ps
 .PHONY: clear
 .PHONY: nim
+.PHONY: pcatcher
+.PHONY: itt
+.PHONY: fb
+.PHONY: mwatch
+.PHONY: wsys
+.PHONY: ci
 
 # Builds everything.
 all: cat chgrp chmod chown cp echo kill ln login ls mv nice pwd rm stat sync \
-	 touch tsh ps clear nim
+	 touch tsh ps clear nim pcatcher itt fb mwatch wsys ci
 
 # Builds cat.
 cat: 
@@ -139,6 +145,30 @@ clear:
 nim: 
 	$(CC) $(CFLAGS) $(LDFLAGS) nim/*.c -o $(UBINDIR)/nim $(LIBDIR)/libc.a
 
+# Builds pcatcher.
+pcatcher: 
+	$(CC) $(CFLAGS) $(LDFLAGS) pcatcher/*.c -o $(UBINDIR)/pcatcher $(LIBDIR)/libc.a
+
+# Builds itt.
+itt: 
+	$(CC) $(CFLAGS) $(LDFLAGS) itt/*.c -o $(UBINDIR)/itt $(LIBDIR)/libc.a
+
+# Builds fb.
+fb: 
+	$(CC) $(CFLAGS) $(LDFLAGS) fb/*.c -o $(UBINDIR)/fb $(LIBDIR)/libc.a
+
+# Builds mwatch.
+mwatch:
+	$(CC) $(CFLAGS) $(LDFLAGS) mwatch/*.c -o $(UBINDIR)/mwatch $(LIBDIR)/libc.a
+
+# Builds wsys.
+wsys:
+	$(CC) $(CFLAGS) $(LDFLAGS) wsys/*.c -o $(UBINDIR)/wsys $(LIBDIR)/libc.a
+
+# Builds ci.
+ci:
+	$(CC) $(CFLAGS) $(LDFLAGS) ci/*.c -o $(UBINDIR)/ci $(LIBDIR)/libc.a
+
 # Clean compilation files.
 clean:
 	@rm -f $(UBINDIR)/cat
@@ -164,3 +194,9 @@ clean:
 	@rm -f $(UBINDIR)/ps
 	@rm -f $(UBINDIR)/clear
 	@rm -f $(UBINDIR)/nim
+	@rm -f $(UBINDIR)/pcatcher
+	@rm -f $(UBINDIR)/itt
+	@rm -f $(UBINDIR)/fb
+	@rm -f $(UBINDIR)/mwatch
+	@rm -f $(UBINDIR)/wsys
+	@rm -f $(UBINDIR)/ci
