@@ -26,30 +26,31 @@
 export CURDIR=`pwd`
 
 if [ "$TARGET" = "i386" ]; then
-	if [ "$1" = "--dbg" ]; then
-		qemu-system-i386 -s -S                                   \
-			-drive file=nanvix.iso,format=raw,if=ide,media=cdrom \
-			-m 256M                                              \
-			-mem-prealloc &
-		ddd --debugger "$CURDIR/tools/dev/toolchain/i386/bin/i386-elf-gdb"
-	elif [ "$1" = "--perf" ]; then
-		qemu-system-i386                                         \
-			-drive file=nanvix.iso,format=raw,if=ide,media=cdrom \
-			-m 256M                                              \
-			-mem-prealloc -cpu host --enable-kvm
-	elif [ "$1" = "--serial" ]; then
-		qemu-system-i386                                         \
-			-nographic                                           \
-			-display none                                        \
-			-drive file=nanvix.iso,format=raw,if=ide,media=cdrom \
-			-m 256M                                              \
-			-mem-prealloc
-	else
-		qemu-system-i386                                         \
-			-drive file=nanvix.iso,format=raw,if=ide,media=cdrom \
-			-m 256M                                              \
-			-mem-prealloc
-	fi
+	qemu_command="qemu-system-i386 -drive file=nanvix.iso,format=raw,if=ide,media=cdrom -m 256M -mem-prealloc"
+
+	while [ $# -gt 0 ]; do
+		case "$1" in
+			--dbg)
+				qemu_command+=" -s -S & ddd --debugger" +
+					"$CURDIR/tools/dev/toolchain/i386/bin/i386-elf-gdb"
+				shift
+				;;
+			--perf)
+				qemu_command+=" -cpu host --enable-kvm"
+				shift
+				;;
+			--serial)
+				qemu_command+=" -nographic -display none"
+				shift
+				;;
+			--smp)
+				qemu_command+=" -smp 2"
+				shift
+				;;
+		esac
+	done
+
+	eval $qemu_command
 else
 	qemu-system-or1k       \
 		-kernel bin/kernel \
