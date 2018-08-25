@@ -26,13 +26,19 @@
 export CURDIR=`pwd`
 
 if [ "$TARGET" = "i386" ]; then
-	qemu_command="qemu-system-i386 -drive file=nanvix.iso,format=raw,if=ide,media=cdrom -m 256M -mem-prealloc"
-
+	qemu_command="qemu-system-i386 -drive
+		file=nanvix.iso,format=raw,if=ide,media=cdrom
+		-m 256M -mem-prealloc"
+	dbg_ddd=false
+	
 	while [ $# -gt 0 ]; do
 		case "$1" in
 			--dbg)
-				qemu_command+=" -s -S & ddd --debugger" +
-					"$CURDIR/tools/dev/toolchain/i386/bin/i386-elf-gdb"
+				qemu_command+=" -s -S"
+				shift
+				;;
+			--ddd)
+				dbg_ddd=true
 				shift
 				;;
 			--perf)
@@ -49,6 +55,13 @@ if [ "$TARGET" = "i386" ]; then
 				;;
 		esac
 	done
+
+	if [ $dbg_ddd = true ]; then
+		qemu_command+=" & ddd --debugger
+			$CURDIR/tools/dev/toolchain/i386/bin/i386-elf-gdb"
+	else
+		qemu_command+=" & $CURDIR/tools/dev/toolchain/i386/bin/i386-elf-gdb"
+	fi
 
 	eval $qemu_command
 else
