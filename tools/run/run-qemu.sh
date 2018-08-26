@@ -29,11 +29,13 @@ if [ "$TARGET" = "i386" ]; then
 	qemu_command="qemu-system-i386 -drive
 		file=nanvix.iso,format=raw,if=ide,media=cdrom
 		-m 256M -mem-prealloc"
+	dbg=false
 	dbg_ddd=false
 	
 	while [ $# -gt 0 ]; do
 		case "$1" in
 			--dbg)
+				dbg=true
 				qemu_command+=" -s -S"
 				shift
 				;;
@@ -56,11 +58,13 @@ if [ "$TARGET" = "i386" ]; then
 		esac
 	done
 
-	if [ $dbg_ddd = true ]; then
-		qemu_command+=" & ddd --debugger
-			$CURDIR/tools/dev/toolchain/i386/bin/i386-elf-gdb"
-	else
-		qemu_command+=" & $CURDIR/tools/dev/toolchain/i386/bin/i386-elf-gdb"
+	if [ $dbg = true ]; then
+		if [ $dbg_ddd = true ]; then
+			qemu_command+=" & ddd --debugger
+							$CURDIR/tools/dev/toolchain/i386/bin/i386-elf-gdb"
+		else
+			qemu_command+=" & $CURDIR/tools/dev/toolchain/i386/bin/i386-elf-gdb"
+		fi
 	fi
 
 	eval $qemu_command
