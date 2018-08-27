@@ -66,74 +66,9 @@ mboot_header:
  * Kernel entry point.
  */
 start:
-	/* Clear flag D, to compare in correct order */
-	cld
-
-	/* Pointer to EBDA */
-	movl $0x40,  %edx
-	shl  $0x4,   %edx
-	addl $0x0E,  %edx
-	movl (%edx), %edx
-
-	/* EBDA start address */
-	movl %edx, %eax
-
-	/* EBDA end address */
-	addl $0x400, %edx
-	movl %edx,   %ebx
-
-lookup_edba:
-	cmpl %eax, %ebx
-	je   end_lookup_edba
-
-	/* RSDP Signature */
-	movl $RSDP_SIG, %esi
-
-	/* Signature size */
-	movl $0x8, %ecx
+	/* Search for RSDP structure. */
+	call search_rsdp
 	
-	/* Start byte to compare */
-	movl %eax, %edi
-
-	/* Compare bytes */
-	rep  cmpsb
-	je   found
-
-	addl $0x10, %eax
-	jmp  lookup_edba
-end_lookup_edba:
-
-	/* Main BIOS area start address */
-	movl $0xE0000, %eax
-
-	/* Main BIOS area end address */
-	movl $0xFFFFF, %ebx
-
-lookup_bios:
-	cmpl %eax, %ebx
-	je   end_lookup
-
-	/* RSDP Signature */
-	movl $RSDP_SIG, %esi
-
-	/* Signature size */
-	movl $0x8, %ecx
-	
-	/* Start byte to compare */
-	movl %eax, %edi
-
-	/* Compare bytes */
-	rep  cmpsb
-	je   found
-
-	addl $0x10, %eax
-	jmp  lookup_bios
-
-found:
-	movl %edi,  %eax
-	subl $0x08, %eax
-	
-end_lookup:
 	cmpl $1, 20(%ebx)
 	jne halt
 	
@@ -291,6 +226,3 @@ cmdline:
 .align PAGE_SIZE
 buffers_virt:
 	.fill NR_BUFFERS*BLOCK_SIZE, 1, 0
-
-
-RSDP_SIG:	.string "RSDP PTR "
