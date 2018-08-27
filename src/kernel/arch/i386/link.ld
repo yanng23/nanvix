@@ -30,6 +30,7 @@ SECTIONS
 	.bootstrap :
 	{
 		arch/i386/boot.o *(.bootstrap)
+                arch/i386/smp.o  *(.bootstrap)
 	}
 	
 	. += 0xc0000000;
