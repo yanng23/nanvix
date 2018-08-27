@@ -46,9 +46,6 @@ search_rsdp:
 	/* set the new base pointer value. */
 	movl %esp,%ebp
 	
-	/* Clear flag D, to compare in correct order. */
-	cld
-
 	/* First lookup into main bios memory region */
 	/* Push start and end address into stack, then */
 	/* call <private> _lookup_memory function. */
@@ -97,6 +94,9 @@ _lookup_memory:
 	/* Param 2 can be found at [ebp + 12]. */
 	movl 0xC(%ebp), %eax
 
+	/* Clear flag D, to compare in correct order. */
+	cld
+
 _lookup_memory_start_loop:
 	cmpl %eax, %ebx
 	je   _lookup_memory_end_loop
@@ -139,11 +139,3 @@ _lookup_memory_return:
 
 	/* Return to caller. */
 	ret	
-	
-
-
-
-
-
-
-
