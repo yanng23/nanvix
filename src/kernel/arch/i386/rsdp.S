@@ -24,21 +24,21 @@
 
 /* Exported symbols */
 .globl search_rsdp
-	
-/*==================================================*
- *=============== Bootstrap section ================*
- *==================================================*/
+
+/*============================================================================*
+ *                              bootstrap section                             *
+ *============================================================================*/
 .section bootstrap
 
-/*--------------------------------------------------*
- *------------------ RSDP Signature ----------------* 
- *--------------------------------------------------*/
+/* RSDP Signature (1st field of RSDP structure) */
 RSDP_SIG:	.string "RSDP PTR "
 
 
-/*--------------------------------------------------*
- *------------------- Search RSDP ------------------* 
- *--------------------------------------------------*/
+/**
+ * @brief Search for RSDP structure.
+ *
+ * @returns RSDP address if found, 0 otherwise
+ */
 search_rsdp:
 	/* Save the old base pointer value. */
 	push %ebp
@@ -46,32 +46,51 @@ search_rsdp:
 	/* set the new base pointer value. */
 	movl %esp,%ebp
 	
-	/* First lookup into main bios memory region */
-	/* Push start and end address into stack, then */
-	/* call <private> _lookup_memory function. */
+	/*
+	 * First lookup into main bios memory region
+	 * Push start and end address into stack, then
+	 * call <private> _lookup_memory function.
+	 */
 	push $0xFFFFF
 	push $0xE0000
 	call _lookup_memory
 
-	/* Clean up the stack. We have 8 bytes */
-	/* (2 params * 4 bytes each) on the stack, */
-	/* and the stack grows down. Thus, to get */
-	/* rid of the parameters, we can simply add */
-	/* 8 to the stack pointer. */
+	/*
+	 * Clean up the stack. We have 8 bytes
+	 * (2 params * 4 bytes each) on the stack,
+	 * and the stack grows down. Thus, to get
+	 * rid of the parameters, we can simply add
+	 * 8 to the stack pointer.
+	 */
 	addl $0x8, %esp
 
-	/* Restore the caller's base pointer. */
-	/* No need to deallocate local variables */
-	/* neither restore any register. */
+	/*
+	 * Restore the caller's base pointer.
+	 * No need to deallocate local variables
+	 * neither restore any register.
+	 */
 	pop %ebp
 
+	/* If RSDP wasn't found, lookup into EBDA */
+	cmpl $0x0, %eax
+
+	/* If %eax value isn't zero, we already have the address */
+	jne  search_rsdp_return
+
+	
+search_rsdp_return:	
 	/* Return to caller. */
 	ret
 	
 
-/*--------------------------------------------------*
- *------------------ Lookup Memory -----------------* 
- *--------------------------------------------------*/
+/**
+ * @brief Lookup for RSDP in memory
+ *
+ * @param Initial address
+ * @param Final address
+ *
+ * @returns RSDP address if found, 0 otherwise
+ */
 _lookup_memory:
 	/* Save the old base pointer value. */
 	push %ebp
@@ -79,19 +98,25 @@ _lookup_memory:
 	/* set the new base pointer value. */
 	movl %esp,%ebp
 
-	/* Save the values of registers that the */
-	/* function will modify. This function uses */
-	/* EBX, EDI and ESI. */
+	/*
+	 * Save the values of registers that the
+	 * function will modify. This function uses
+	 * EBX, EDI and ESI.
+	 */
 	push %ebx
 	push %edi
 	push %esi
 
-	/* Put value of param 1 into EAX (start address). */
-	/* Param 1 can be found at [ebp + 8]. */
+	/*
+	 * Put value of param 1 into EAX (start address).
+	 * Param 1 can be found at [ebp + 8].
+	 */
 	movl 0x8(%ebp), %eax
 
-	/* Put value of param 2 into EAX (end address). */
-	/* Param 2 can be found at [ebp + 12]. */
+	/*
+	 * Put value of param 2 into EAX (end address).
+	 * Param 2 can be found at [ebp + 12].
+	 */
 	movl 0xC(%ebp), %eax
 
 	/* Clear flag D, to compare in correct order. */
@@ -132,9 +157,11 @@ _lookup_memory_return:
 	pop %edi
 	pop %ebx
 
-	/* Restore the caller's base pointer. */
-	/* No need to deallocate local variable. */
-	/* since we didn't use any. */
+	/*
+	 * Restore the caller's base pointer.
+	 * No need to deallocate local variable.
+	 * since we didn't use any.
+	 */
 	pop %ebp
 
 	/* Return to caller. */
