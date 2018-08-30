@@ -114,10 +114,27 @@ search_rsdp:
 	je   search_rsdp_return
 	
 search_rsdp_checksum:
-	/* Call checksum function, passing RSDP base address */
+	/* Save EAX content */
 	push %eax
+
+	/* Pass RSDP base address as param */
+	push %eax
+
+	/* Call checksum function */
 	call _rsdp_checksum
 
+	/*
+	 * Clean up the stack. We have 4 bytes
+	 * (1 param * 4 bytes size) on the stack,
+	 * and the stack grows down. Thus, to get
+	 * rid of this parameter, we can simply add
+	 * 4 to the stack pointer.
+	 */
+	addl $0x4, %esp
+
+	/* Restore EAX content (RSDP base address) */
+	pop %eax
+	
 search_rsdp_return:
 	/*
 	 * Restore the caller's base pointer.
