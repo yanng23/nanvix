@@ -222,3 +222,30 @@ _lookup_memory_return:
  * @returns <true> if it's valid, <false> otherwise.
  */
 _rsdp_checksum:
+	/* Save the old base pointer value. */
+	push %ebp
+
+	/* set the new base pointer value. */
+	movl %esp, %ebp
+
+	/*
+	 * Save the values of registers that the
+	 * function will modify. This function uses
+	 * only EBX.
+	 */
+	push %ebx
+
+	/* *** TODO ***: function body */
+	
+	/* Recover register values. */
+	pop %ebx
+
+	/*
+	 * Restore the caller's base pointer.
+	 * No need to deallocate local variable.
+	 * since we didn't use any.
+	 */
+	pop %ebp
+
+	/* Return to caller. */
+	ret	
