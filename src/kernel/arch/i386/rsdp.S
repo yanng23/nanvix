@@ -33,7 +33,6 @@
 /* RSDP Signature (1st field of RSDP structure) */
 RSDP_SIG:	.string "RSDP PTR "
 
-
 /**
  * @brief Search for RSDP structure.
  *
@@ -44,12 +43,14 @@ search_rsdp:
 	push %ebp
 
 	/* set the new base pointer value. */
-	movl %esp,%ebp
+	movl %esp, %ebp
 	
 	/*
-	 * First lookup into main bios memory region
+	 * First lookup into main bios memory region that
+	 * is between 0xE0000 and 0xFFFFF.
 	 * Push start and end address into stack, then
 	 * call <private> _lookup_memory function.
+	 * 
 	 */
 	push $0xFFFFF
 	push $0xE0000
@@ -71,12 +72,45 @@ search_rsdp:
 	 */
 	pop %ebp
 
-	/* If RSDP wasn't found, lookup into EBDA */
-	cmpl $0x0, %eax
-
-	/* If %eax value isn't zero, we already have the address */
+	/*
+	 * If RSDP wasn't found, lookup into EBDA.
+	 * If %eax value isn't zero, we already have
+	 * the address.
+	 */
+	cmpl $0x0,   %eax
 	jne  search_rsdp_return
 
+	/*
+	 * Get EBDA initial address by looking
+	 * for a 2 byte real mode segment pointer
+	 * that is located at 40:0Eh (segment:offset).
+	 */
+	movl $0x40E, %eax
+	movl (%eax), %eax
+
+	/* We're looking in the first 1KB of the EBDA. */
+	movl %eax,   %ebx
+	addl $0x400, %ebx
+
+	push %ebx
+	push %eax
+	call _lookup_memory
+
+	/*
+	 * Clean up the stack. We have 8 bytes
+	 * (2 params * 4 bytes each) on the stack,
+	 * and the stack grows down. Thus, to get
+	 * rid of the parameters, we can simply add
+	 * 8 to the stack pointer.
+	 */
+	addl $0x8, %esp
+
+	/*
+	 * Restore the caller's base pointer.
+	 * No need to deallocate local variables
+	 * neither restore any register.
+	 */
+	pop %ebp
 	
 search_rsdp_return:	
 	/* Return to caller. */
@@ -96,7 +130,7 @@ _lookup_memory:
 	push %ebp
 
 	/* set the new base pointer value. */
-	movl %esp,%ebp
+	movl %esp, %ebp
 
 	/*
 	 * Save the values of registers that the
@@ -114,10 +148,10 @@ _lookup_memory:
 	movl 0x8(%ebp), %eax
 
 	/*
-	 * Put value of param 2 into EAX (end address).
+	 * Put value of param 2 into EBX (end address).
 	 * Param 2 can be found at [ebp + 12].
 	 */
-	movl 0xC(%ebp), %eax
+	movl 0xC(%ebp), %ebx
 
 	/* Clear flag D, to compare in correct order. */
 	cld
@@ -132,14 +166,14 @@ _lookup_memory_start_loop:
 	/* Signature size */
 	movl $0x8, %ecx
 	
-	/* Start byte to compare */
+	/* Initial byte that we're going to compare */
 	movl %eax, %edi
 
-	/* Compare bytes */
-	rep  cmpsb
-	je   _lookup_memory_found
-
-	addl $0x10, %eax
+	/* Comparing bytes */
+	rep cmpsb
+	je  _lookup_memory_found
+	
+	addl $0x1, %eax
 	jmp  _lookup_memory_start_loop
 	
 _lookup_memory_end_loop:
