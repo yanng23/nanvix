@@ -36,7 +36,7 @@ RSDP_SIG:	.string "RSD PTR "
 /**
  * @brief Search for RSDP structure.
  *
- * @returns RSDP address if found, 0 otherwise
+ * @returns RSDP address if found, 0 otherwise.
  */
 search_rsdp:
 	/* Save the old base pointer value. */
@@ -68,19 +68,12 @@ search_rsdp:
 	addl $0x8, %esp
 
 	/*
-	 * Restore the caller's base pointer.
-	 * No need to deallocate local variables
-	 * neither restore any register.
-	 */
-	pop %ebp
-
-	/*
 	 * If RSDP wasn't found, lookup into EBDA.
 	 * If %eax value isn't zero, we already have
 	 * the address.
 	 */
 	cmpl $0x0,   %eax
-	jne  search_rsdp_return
+	jne  search_rsdp_checksum
 
 	/*
 	 * Get EBDA initial address by looking
@@ -114,24 +107,35 @@ search_rsdp:
 	addl $0x8, %esp
 
 	/*
+	 * If RSDP wasn't found at all, just return
+	 * and maybe run with just one core. 
+	 */
+	cmpl $0x0, %eax
+	je   search_rsdp_return
+	
+search_rsdp_checksum:
+	/* Call checksum function, passing RSDP base address */
+	push %eax
+	call _rsdp_checksum
+
+search_rsdp_return:
+	/*
 	 * Restore the caller's base pointer.
 	 * No need to deallocate local variables
 	 * neither restore any register.
 	 */
 	pop %ebp
 	
-search_rsdp_return:	
 	/* Return to caller. */
 	ret
-	
 
 /**
- * @brief Lookup for RSDP in memory
+ * @brief Lookup for RSDP in memory.
  *
- * @param Initial address
- * @param Final address
+ * @param Initial address.
+ * @param Final address.
  *
- * @returns RSDP address if found, 0 otherwise
+ * @returns RSDP address if found, 0 otherwise.
  */
 _lookup_memory:
 	/* Save the old base pointer value. */
@@ -209,3 +213,12 @@ _lookup_memory_return:
 
 	/* Return to caller. */
 	ret	
+
+/**
+ * @brief Assert that RSDP structure is valid.
+ *
+ * @param Base RSDP address.
+ *
+ * @returns <true> if it's valid, <false> otherwise.
+ */
+_rsdp_checksum:
