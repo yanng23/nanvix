@@ -31,7 +31,7 @@
 .section bootstrap
 
 /* RSDP Signature (1st field of RSDP structure) */
-RSDP_SIG:	.string "RSDP PTR "
+RSDP_SIG:	.string "RSD PTR "
 
 /**
  * @brief Search for RSDP structure.
@@ -47,13 +47,15 @@ search_rsdp:
 	
 	/*
 	 * First lookup into main bios memory region that
-	 * is between 0xE0000 and 0xFFFFF.
+	 * is between 0xE0000 and 0xFFFFF (0x100000 =
+	 * 0xFFFFF + 0x1, which means that we're doing
+	 * a loop that runs while address < 0x100000).
+	 *
 	 * Push start and end address into stack, then
 	 * call <private> _lookup_memory function.
-	 * 
 	 */
-	push $0xFFFFF
-	push $0xE0000
+	push $0x100000
+	push $0x0E0000
 	call _lookup_memory
 
 	/*
@@ -88,9 +90,15 @@ search_rsdp:
 	movl $0x40E, %eax
 	movl (%eax), %eax
 
-	/* We're looking in the first 1KB of the EBDA. */
+	/*
+	 * We're looking in the first 1KB of the EBDA.
+	 * We use 0x401 (and not 0x400) as the final address
+	 * for the same reason that we used 0x10000 while
+	 * looking into main bios area, i.e. we're running
+	 * the loop while address < 0x401.
+	 */
 	movl %eax,   %ebx
-	addl $0x400, %ebx
+	addl $0x401, %ebx
 
 	push %ebx
 	push %eax
@@ -158,7 +166,7 @@ _lookup_memory:
 
 _lookup_memory_start_loop:
 	cmpl %eax, %ebx
-	je   _lookup_memory_end_loop
+	je _lookup_memory_end_loop
 
 	/* RSDP Signature */
 	movl $RSDP_SIG, %esi
@@ -173,17 +181,18 @@ _lookup_memory_start_loop:
 	rep cmpsb
 	je  _lookup_memory_found
 	
-	addl $0x1, %eax
+	addl $0x10, %eax
 	jmp  _lookup_memory_start_loop
 	
 _lookup_memory_end_loop:
-	/* Return <false> if structure wasn't found. */
+	/* Return 0 (false) if structure wasn't found. */
 	movl $0x0, %eax
 	jmp  _lookup_memory_return
 
 _lookup_memory_found:
-	/* Return <true> if structure was found. */
-	movl $0x1, %eax
+	/* Return the RSDP address if structure was found. */
+	movl %edi, %eax
+	subl $0x8, %eax
 	
 _lookup_memory_return:
 	/* Recover register values. */
