@@ -21,7 +21,7 @@
 #define ASM_CALL_H_
 
 /* Stack offsets. */
-#define ARG0_OFFSET     0x8     /* 1st argument passed to a function. */
-#define ARG1_OFFSET     0xC     /* 2nd argument passed to a function. */
+#define ARG0_OFFSET 0x8 /* 1st argument passed to a function. */
+#define ARG1_OFFSET 0xC /* 2nd argument passed to a function. */
 
 #endif

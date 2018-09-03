@@ -38,7 +38,7 @@
  *
  * @param RSDP base address
  *
- * @returns 1 if it's valid, 0 otherwise.
+ * @returns VALID_CHECKSUM if it's valid, INVALID_CHECKSUM otherwise.
  */
 acpi_checksum:
 	/* Save the old base pointer value. */

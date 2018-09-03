@@ -39,8 +39,9 @@
 #ifndef RSDP_H_
 #define RSDP_H_
 
-/* RSDP attributes. */
 #define RSDP_SIG_SIZE 0x8     /* Signature size (8 bytes). */
 #define CHECKSUM_SIZE 0x14    /* Num of bytes included in checksum. */
+#define REVISION_OFFSET 0xF   /* RSDP revision that tell us the ACPI version. */
+#define REVISION_OLD_ACPI 0x0 /* ACPI 1.0 has revision value equal to zero. */
 
 #endif

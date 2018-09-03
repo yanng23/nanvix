@@ -131,6 +131,18 @@ search_rsdp_checksum:
 	/* Restore EAX content and clean up stack. */
 	pop  %eax
 	addl $0x4, %esp
+
+	/*
+	 * Check whether the ACPI version is 1.0 or 2.0.
+	 * If it is 2.0, call checksum to the extended part
+	 * of RSDP.
+	 */
+	addl $REVISION_OFFSET, %eax
+	cmpl $REVISION_OLD_ACPI, %eax
+	je search_rsdp_return
+
+	/*** TODO: Checksum for the extended area on ACPI 2.0. ***/
+	
 	
 search_rsdp_return:
 	/*
