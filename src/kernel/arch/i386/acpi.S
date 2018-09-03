@@ -22,6 +22,7 @@
 /* Must come first */
 #define _ASM_FILE_
 
+#include <i386/acpi.h>
 #include <i386/asm_call.h>
 
 /* Exported symbols */
@@ -37,7 +38,7 @@
  *
  * @param RSDP base address
  *
- * @returns 0 if it's valid, another value otherwise.
+ * @returns 1 if it's valid, 0 otherwise.
  */
 acpi_checksum:
 	/* Save the old base pointer value. */
@@ -71,10 +72,22 @@ acpi_checksum_loop:
 	 * Uses ECX register as loop counter.
 	 * ECX starts with 20, being decremented
 	 * at each iteration. When ECX equals zero,
-	 * loop is over.*/
+	 * loop is over.
+	 */
 	loop acpi_checksum_loop
 
+	/* If the lowest byte is equal to zero, the structure is valid. */
+	cmp $0x0, %al
+	je acpi_checksum_valid
+
+	/* Else, we got an error. */
+	movl $INVALID_CHECKSUM, %eax
+	jmp acpi_checksum_return
 	
+acpi_checksum_valid:
+	movl $VALID_CHECKSUM, %eax
+	
+acpi_checksum_return:
 	/* Recover register values. */
 	pop %ebx
 

@@ -36,11 +36,10 @@
  * along with Nanvix. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef RSDP_H_
-#define RSDP_H_
+#ifndef ACPI_H_
+#define ACPI_H_
 
-/* RSDP attributes. */
-#define RSDP_SIG_SIZE 0x8     /* Signature size (8 bytes). */
-#define CHECKSUM_SIZE 0x14    /* Num of bytes included in checksum. */
+#define INVALID_CHECKSUM 0x0 /* Invalid structure. */
+#define VALID_CHECKSUM 0x1 /* Valid structure. */
 
 #endif

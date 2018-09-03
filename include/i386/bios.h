@@ -21,9 +21,9 @@
 #define BIOS_H_
 
 /* BIOS attributes. */
-#define EBDA_POINTER    0x40E   /* EBDA pointer address. */
-#define EBDA_SIZE       0x400   /* Size of 1kB. */
+#define EBDA_POINTER 0x40E   /* EBDA pointer address. */
+#define EBDA_SIZE 0x400   /* Size of 1kB. */
 #define MAIN_BIOS_START 0xE0000 /* Main bios start address. */
-#define MAIN_BIOS_END   0xFFFFF /* Main bios end address. */
+#define MAIN_BIOS_END 0xFFFFF /* Main bios end address. */
 
 #endif
