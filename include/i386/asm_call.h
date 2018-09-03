@@ -17,52 +17,11 @@
  * along with Nanvix. If not, see <http://www.gnu.org/licenses/>.
  */
 
-OUTPUT_FORMAT("elf32-i386")
-ENTRY(start)
+#ifndef ASM_CALL_H_
+#define ASM_CALL_H_
 
-SECTIONS 
-{
-	. = 0x100000;
-	
-	KSTART = .;
-	
-	/* Bootstrap section. */
-	.bootstrap :
-	{
-		arch/i386/boot.o *(.bootstrap)
-		arch/i386/acpi.o *(.bootstrap)
-		arch/i386/rsdp.o *(.bootstrap)
-	}
-	
-	. += 0xc0000000;
+/* Stack offsets. */
+#define ARG0_OFFSET     0x8     /* 1st argument passed to a function. */
+#define ARG1_OFFSET     0xC     /* 2nd argument passed to a function. */
 
-	/* Kernel code section. */
-	.text ALIGN(4096) : AT(ADDR(.text) - 0xc0000000)
-   {
-       *(.text)
-       *(.rodata)
-   }
-   
-   /* Initialized kernel data section. */
-   .data ALIGN(4096) : AT(ADDR(.data) - 0xc0000000)
-   {
-       *(.data)
-   }
-   
-   /* Uninitialized kernel data section. */
-   .bss : AT(ADDR(.bss) - 0xc0000000)
-   {
-       *(.bss)
-   }
-   
-   . =ALIGN(4096);
-	
-   KDATA_END = .;
-   
-   /* Discarded. */
-   /DISCARD/ :
-   {
-        *(.comment)
-        *(.note)
-   }
-}
+#endif

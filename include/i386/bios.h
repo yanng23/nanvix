@@ -17,52 +17,13 @@
  * along with Nanvix. If not, see <http://www.gnu.org/licenses/>.
  */
 
-OUTPUT_FORMAT("elf32-i386")
-ENTRY(start)
+#ifndef BIOS_H_
+#define BIOS_H_
 
-SECTIONS 
-{
-	. = 0x100000;
-	
-	KSTART = .;
-	
-	/* Bootstrap section. */
-	.bootstrap :
-	{
-		arch/i386/boot.o *(.bootstrap)
-		arch/i386/acpi.o *(.bootstrap)
-		arch/i386/rsdp.o *(.bootstrap)
-	}
-	
-	. += 0xc0000000;
+/* BIOS attributes. */
+#define EBDA_POINTER    0x40E   /* EBDA pointer address. */
+#define EBDA_SIZE       0x400   /* Size of 1kB. */
+#define MAIN_BIOS_START 0xE0000 /* Main bios start address. */
+#define MAIN_BIOS_END   0xFFFFF /* Main bios end address. */
 
-	/* Kernel code section. */
-	.text ALIGN(4096) : AT(ADDR(.text) - 0xc0000000)
-   {
-       *(.text)
-       *(.rodata)
-   }
-   
-   /* Initialized kernel data section. */
-   .data ALIGN(4096) : AT(ADDR(.data) - 0xc0000000)
-   {
-       *(.data)
-   }
-   
-   /* Uninitialized kernel data section. */
-   .bss : AT(ADDR(.bss) - 0xc0000000)
-   {
-       *(.bss)
-   }
-   
-   . =ALIGN(4096);
-	
-   KDATA_END = .;
-   
-   /* Discarded. */
-   /DISCARD/ :
-   {
-        *(.comment)
-        *(.note)
-   }
-}
+#endif

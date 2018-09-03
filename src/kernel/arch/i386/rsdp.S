@@ -22,6 +22,8 @@
 /* Must come first */
 #define _ASM_FILE_
 
+#include <i386/asm_call.h>
+#include <i386/bios.h>
 #include <i386/rsdp.h>
 
 /* Exported symbols */
@@ -114,17 +116,21 @@ search_rsdp:
 	je   search_rsdp_return
 	
 search_rsdp_checksum:
+	/* Pass number of bytes to check. */
+	push $CHECKSUM_SIZE
+	
 	/* Save EAX content and pass RSDP base address as param. */
 	push %eax
 	
 	/* Call checksum function. */
-	call _rsdp_checksum
+	call acpi_checksum
 
 	/* Move return value to EDX. */
 	movl %eax, %edx
 
 	/* Restore EAX content and clean up stack. */
 	pop  %eax
+	addl $0x4, %esp
 	
 search_rsdp_return:
 	/*
@@ -210,62 +216,6 @@ _lookup_memory_return:
 	/* Recover register values. */
 	pop %esi
 	pop %edi
-	pop %ebx
-
-	/*
-	 * Restore the caller's base pointer.
-	 * No need to deallocate local variable.
-	 * since we didn't use any.
-	 */
-	pop %ebp
-
-	/* Return to caller. */
-	ret	
-
-/**
- * @brief Assert that RSDP structure is valid.
- *
- * @param RSDP base address
- *
- * @returns 0 if it's valid, another value otherwise.
- */
-_rsdp_checksum:
-	/* Save the old base pointer value. */
-	push %ebp
-
-	/* set the new base pointer value. */
-	movl %esp, %ebp
-
-	/*
-	 * Save the values of registers that the
-	 * function will modify. This function uses
-	 * only EBX.
-	 */
-	push %ebx
-
-	/* Get RSDP base address. */
-	movl ARG0_OFFSET(%ebp), %edx
-	
-	/* We're looping over the first 20 bytes (while ECX < 20). */
-	movl $CHECKSUM_SIZE, %ecx
-	
-	/* Sum starts with 0. */
-	andl $0x0, %eax
-	
-_rsdp_checksum_loop:
-	/* Sum RSDP bytes (including checksum). */
-	addl (%edx), %eax
-	inc %edx
-	
-	/*
-	 * Uses ECX register as loop counter.
-	 * ECX starts with 20, being decremented
-	 * at each iteration. When ECX equals zero,
-	 * loop is over.*/
-	loop _rsdp_checksum_loop
-
-	
-	/* Recover register values. */
 	pop %ebx
 
 	/*
