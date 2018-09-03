@@ -22,6 +22,8 @@
 /* Must come first */
 #define _ASM_FILE_
 
+#include <i386/rsdp.h>
+
 /* Exported symbols */
 .globl search_rsdp
 
@@ -47,15 +49,13 @@ search_rsdp:
 	
 	/*
 	 * First lookup into main bios memory region that
-	 * is between 0xE0000 and 0xFFFFF (0x100000 =
-	 * 0xFFFFF + 0x1, which means that we're doing
-	 * a loop that runs while address < 0x100000).
+	 * is between 0xE0000 and 0xFFFFF.
 	 *
 	 * Push start and end address into stack, then
 	 * call <private> _lookup_memory function.
 	 */
-	push $0x100000
-	push $0x0E0000
+	push $MAIN_BIOS_END
+	push $MAIN_BIOS_START
 	call _lookup_memory
 
 	/*
@@ -72,26 +72,26 @@ search_rsdp:
 	 * If %eax value isn't zero, we already have
 	 * the address.
 	 */
-	cmpl $0x0,   %eax
-	jne  search_rsdp_checksum
+	cmpl $0x0, %eax
+	jne search_rsdp_checksum
 
 	/*
 	 * Get EBDA initial address by looking
 	 * for a 2 byte real mode segment pointer
 	 * that is located at 40:0Eh (segment:offset).
 	 */
-	movl $0x40E, %eax
+	movl $EBDA_POINTER, %eax
 	movl (%eax), %eax
 
 	/*
-	 * We're looking in the first 1KB of the EBDA.
+	 * We're looking in the first 1kB of the EBDA.
 	 * We use 0x401 (and not 0x400) as the final address
 	 * for the same reason that we used 0x10000 while
 	 * looking into main bios area, i.e. we're running
 	 * the loop while address < 0x401.
 	 */
-	movl %eax,   %ebx
-	addl $0x401, %ebx
+	movl %eax,       %ebx
+	addl $EBDA_SIZE, %ebx
 
 	push %ebx
 	push %eax
@@ -114,26 +114,17 @@ search_rsdp:
 	je   search_rsdp_return
 	
 search_rsdp_checksum:
-	/* Save EAX content */
+	/* Save EAX content and pass RSDP base address as param. */
 	push %eax
-
-	/* Pass RSDP base address as param */
-	push %eax
-
-	/* Call checksum function */
+	
+	/* Call checksum function. */
 	call _rsdp_checksum
 
-	/*
-	 * Clean up the stack. We have 4 bytes
-	 * (1 param * 4 bytes size) on the stack,
-	 * and the stack grows down. Thus, to get
-	 * rid of this parameter, we can simply add
-	 * 4 to the stack pointer.
-	 */
-	addl $0x4, %esp
+	/* Move return value to EDX. */
+	movl %eax, %edx
 
-	/* Restore EAX content (RSDP base address) */
-	pop %eax
+	/* Restore EAX content and clean up stack. */
+	pop  %eax
 	
 search_rsdp_return:
 	/*
@@ -174,46 +165,46 @@ _lookup_memory:
 	 * Put value of param 1 into EAX (start address).
 	 * Param 1 can be found at [ebp + 8].
 	 */
-	movl 0x8(%ebp), %eax
+	movl ARG0_OFFSET(%ebp), %eax
 
 	/*
 	 * Put value of param 2 into EBX (end address).
 	 * Param 2 can be found at [ebp + 12].
 	 */
-	movl 0xC(%ebp), %ebx
+	movl ARG1_OFFSET(%ebp), %ebx
 
 	/* Clear flag D, to compare in correct order. */
 	cld
 
 _lookup_memory_start_loop:
-	cmpl %eax, %ebx
-	je _lookup_memory_end_loop
+	cmpl %ebx, %eax
+	jg   _lookup_memory_end_loop
 
 	/* RSDP Signature */
 	movl $RSDP_SIG, %esi
 
 	/* Signature size */
-	movl $0x8, %ecx
+	movl $RSDP_SIG_SIZE, %ecx
 	
 	/* Initial byte that we're going to compare */
 	movl %eax, %edi
 
 	/* Comparing bytes */
 	rep cmpsb
-	je  _lookup_memory_found
+	je _lookup_memory_found
 	
 	addl $0x10, %eax
-	jmp  _lookup_memory_start_loop
+	jmp _lookup_memory_start_loop
 	
 _lookup_memory_end_loop:
 	/* Return 0 (false) if structure wasn't found. */
 	movl $0x0, %eax
-	jmp  _lookup_memory_return
+	jmp _lookup_memory_return
 
 _lookup_memory_found:
 	/* Return the RSDP address if structure was found. */
 	movl %edi, %eax
-	subl $0x8, %eax
+	subl $RSDP_SIG_SIZE, %eax
 	
 _lookup_memory_return:
 	/* Recover register values. */
@@ -234,9 +225,9 @@ _lookup_memory_return:
 /**
  * @brief Assert that RSDP structure is valid.
  *
- * @param Base RSDP address.
+ * @param RSDP base address
  *
- * @returns <true> if it's valid, <false> otherwise.
+ * @returns 0 if it's valid, another value otherwise.
  */
 _rsdp_checksum:
 	/* Save the old base pointer value. */
@@ -252,7 +243,26 @@ _rsdp_checksum:
 	 */
 	push %ebx
 
-	/* *** TODO ***: function body */
+	/* Get RSDP base address. */
+	movl ARG0_OFFSET(%ebp), %edx
+	
+	/* We're looping over the first 20 bytes (while ECX < 20). */
+	movl $CHECKSUM_SIZE, %ecx
+	
+	/* Sum starts with 0. */
+	andl $0x0, %eax
+	
+_rsdp_checksum_loop:
+	/* Sum RSDP bytes (including checksum). */
+	
+	
+	/*
+	 * Uses ECX register as loop counter.
+	 * ECX starts with 20, being decremented
+	 * at each iteration. When ECX equals zero,
+	 * loop is over.*/
+	loop _rsdp_checksum_loop
+
 	
 	/* Recover register values. */
 	pop %ebx
