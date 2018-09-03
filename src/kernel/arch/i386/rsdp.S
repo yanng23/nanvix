@@ -254,7 +254,8 @@ _rsdp_checksum:
 	
 _rsdp_checksum_loop:
 	/* Sum RSDP bytes (including checksum). */
-	
+	addl (%edx), %eax
+	inc %edx
 	
 	/*
 	 * Uses ECX register as loop counter.
