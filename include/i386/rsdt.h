@@ -17,12 +17,9 @@
  * along with Nanvix. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef RSDP_H_
-#define RSDP_H_
+#ifndef RSDP_T_
+#define RSDP_T_
 
-#define RSDP_SIG_SIZE 0x8          /* Signature size (8 bytes). */
-#define RSDP_CHECKSUM_SIZE 0x14    /* Num of bytes included in checksum. */
-#define RSDP_REVISION_OFFSET 0xF   /* RSDP revision that tell us the ACPI version. */
-#define RSDT_OFFSET 0x10           /* RSDT address offset. */
+#define RSDT_LENGTH_OFFSET 0x4 /* Length of the entire table. */
 
 #endif

@@ -72,10 +72,10 @@ search_rsdp:
 
 	/*
 	 * If RSDP wasn't found, lookup into EBDA.
-	 * If %eax value isn't zero, we already have
+	 * If %eax value isn't $INVALID, we already have
 	 * the address.
 	 */
-	cmpl $0x0, %eax
+	cmpl $INVALID, %eax
 	jne search_rsdp_checksum
 
 	/*
@@ -113,12 +113,12 @@ search_rsdp:
 	 * If RSDP wasn't found at all, just return
 	 * and maybe run with just one core. 
 	 */
-	cmpl $0x0, %eax
+	cmpl $INVALID, %eax
 	je   search_rsdp_return
 	
 search_rsdp_checksum:
 	/* Pass number of bytes to check. */
-	push $CHECKSUM_SIZE
+	push $RSDP_CHECKSUM_SIZE
 	
 	/* Save EAX content and pass RSDP base address as param. */
 	push %eax
@@ -134,7 +134,7 @@ search_rsdp_checksum:
 	addl $0x4, %esp
 
 	/* If checksum failed, just return 0. */
-	cmpl $INVALID_CHECKSUM, %edx
+	cmpl $INVALID, %edx
 	je search_rsdp_checkum_failed
 
 	/*
@@ -143,7 +143,7 @@ search_rsdp_checksum:
 	 * of RSDP.
 	 */
 	movl %eax, %edx
-	addl $REVISION_OFFSET, %edx
+	addl $RSDP_REVISION_OFFSET, %edx
 	movl (%edx), %edx
 	cmpb $REVISION_OLD_ACPI, %dl
 	je search_rsdp_return
@@ -152,7 +152,7 @@ search_rsdp_checksum:
 	nop
 
 search_rsdp_checkum_failed:
-	movl $INVALID_CHECKSUM, %eax
+	movl $INVALID, %eax
 	
 search_rsdp_return:
 	/*
@@ -171,7 +171,7 @@ search_rsdp_return:
  * @param Initial address.
  * @param Final address.
  *
- * @returns RSDP address if found, 0 otherwise.
+ * @returns RSDP address if found, $INVALID otherwise.
  */
 _lookup_memory:
 	/* Save the old base pointer value. */
@@ -225,8 +225,8 @@ _lookup_memory_start_loop:
 	jmp _lookup_memory_start_loop
 	
 _lookup_memory_end_loop:
-	/* Return 0 (false) if structure wasn't found. */
-	movl $0x0, %eax
+	/* Return $INVALID if structure wasn't found. */
+	movl $INVALID, %eax
 	jmp _lookup_memory_return
 
 _lookup_memory_found:

@@ -38,7 +38,7 @@
  *
  * @param RSDP base address
  *
- * @returns VALID_CHECKSUM if it's valid, INVALID_CHECKSUM otherwise.
+ * @returns VALID if checksum is ok, INVALID otherwise.
  */
 acpi_checksum:
 	/* Save the old base pointer value. */
@@ -81,11 +81,11 @@ acpi_checksum_loop:
 	je acpi_checksum_valid
 
 	/* Else, we got an error. */
-	movl $INVALID_CHECKSUM, %eax
+	movl $INVALID, %eax
 	jmp acpi_checksum_return
 	
 acpi_checksum_valid:
-	movl $VALID_CHECKSUM, %eax
+	movl $VALID, %eax
 	
 acpi_checksum_return:
 	/* Recover register values. */

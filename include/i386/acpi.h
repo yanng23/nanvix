@@ -39,7 +39,8 @@
 #ifndef ACPI_H_
 #define ACPI_H_
 
-#define INVALID_CHECKSUM 0x0 /* Invalid structure. */
-#define VALID_CHECKSUM 0x1 /* Valid structure. */
+#define REVISION_OLD_ACPI 0x0 /* ACPI 1.0 has revision value equal to zero. */
+#define INVALID 0x0 /* Invalid structure. */
+#define VALID 0x1 /* Valid structure. */
 
 #endif

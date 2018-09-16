@@ -22,6 +22,9 @@
 /* Must come first. */
 #define _ASM_FILE_
 
+#include <i386/acpi.h>
+#include <i386/rsdp.h>
+#include <i386/rsdt.h>	
 #include <i386/i386.h>
 #include <nanvix/config.h>
 #include <nanvix/mboot.h>
@@ -68,7 +71,51 @@ mboot_header:
 start:
 	/* Search for RSDP structure. */
 	call search_rsdp
+
+	/*
+	 * If RSDP isn't valid, continue to execute as a single core. */
+	 */
+	cmpl $INVALID, %eax
+	je continue
+
+	movl %eax, %edx
+	addl $RSDP_REVISION_OFFSET, %edx
+	movl (%edx), %edx
+	cmpb $REVISION_OLD_ACPI, %dl
+	jne xsdt
+
+	/* Get RSDT. */
+	addl $RSDT_OFFSET, %eax
+	movl (%eax), %eax
+	movl %eax, %edx
 	
+	/* Get RSDT length. */
+	addl $RSDT_LENGTH_OFFSET, %eax
+
+	/* Pass the number of bytes to checksum. */
+	push (%eax)
+
+	/* Pass RSDT base address as param. */
+	push %edx
+
+	/* Call checksum function. */
+	call acpi_checksum
+
+	/* Restore EDX content and clean up stack. */
+	pop  %edx
+	addl $0x4, %esp
+
+	/* If RSDT isn't valid, continue to execute as a single core. */
+	compl $INVALID, %eax
+	je continue
+
+	
+	
+xsdt:
+	/*** TODO: use XSDT if ACPI version is 2.0. ***/
+	nop
+	
+continue:	
 	cmpl $1, 20(%ebx)
 	jne halt
 	
