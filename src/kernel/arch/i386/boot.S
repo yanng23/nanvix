@@ -109,7 +109,9 @@ start:
 
 	/* Get MADT base address. */
 	call get_madt
-	
+
+
+	je continue
 xsdt:
 	/*** TODO: use XSDT if ACPI version is 2.0. ***/
 	nop
