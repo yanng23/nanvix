@@ -32,6 +32,7 @@ SECTIONS
 		arch/i386/boot.o *(.bootstrap)
 		arch/i386/acpi.o *(.bootstrap)
 		arch/i386/rsdp.o *(.bootstrap)
+                arch/i386/rsdt.o *(.bootstrap)
 	}
 	
 	. += 0xc0000000;

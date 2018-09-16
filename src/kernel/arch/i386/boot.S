@@ -72,9 +72,7 @@ start:
 	/* Search for RSDP structure. */
 	call search_rsdp
 
-	/*
-	 * If RSDP isn't valid, continue to execute as a single core. */
-	 */
+	/* If RSDP isn't valid, continue to execute as a single core. */
 	cmpl $INVALID, %eax
 	je continue
 
@@ -106,10 +104,11 @@ start:
 	addl $0x4, %esp
 
 	/* If RSDT isn't valid, continue to execute as a single core. */
-	compl $INVALID, %eax
+	cmpl $INVALID, %eax
 	je continue
 
-	
+	/* Get MADT base address. */
+	call get_madt
 	
 xsdt:
 	/*** TODO: use XSDT if ACPI version is 2.0. ***/

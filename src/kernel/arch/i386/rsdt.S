@@ -1,5 +1,7 @@
 /*
  * Copyright(C) 2011-2016 Pedro H. Penna <pedrohenriquepenna@gmail.com>
+ *              2017-2017 Clement Rouquier <clementrouquier@gmail.com>
+ *              2018-2018 Davidson Francis <davidsondfgl@gmail.com>
  * 
  * This file is part of Nanvix.
  * 
@@ -17,10 +19,23 @@
  * along with Nanvix. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef RSDP_T_
-#define RSDP_T_
+/* Must come first */
+#define _ASM_FILE_
 
-#define RSDT_LENGTH_OFFSET 0x4   /* Length of the entire table. */
-#define RSDT_ENTRIES_OFFSET 0x24 /* Array of other SDTs. */
+#include <i386/asm_call.h>
 
-#endif
+/* Exported symbols */
+.globl get_madt
+
+/*============================================================================*
+ *                              bootstrap section                             *
+ *============================================================================*/
+.section bootstrap
+
+/**
+ * @brief Search for MADT.
+ *
+ * @returns MADT address if found, 0 otherwise.
+ */
+get_madt:
+	ret
