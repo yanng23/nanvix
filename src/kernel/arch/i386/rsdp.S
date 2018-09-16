@@ -22,6 +22,7 @@
 /* Must come first */
 #define _ASM_FILE_
 
+#include <i386/acpi.h>
 #include <i386/asm_call.h>
 #include <i386/bios.h>
 #include <i386/rsdp.h>
@@ -132,17 +133,26 @@ search_rsdp_checksum:
 	pop  %eax
 	addl $0x4, %esp
 
+	/* If checksum failed, just return 0. */
+	cmpl $INVALID_CHECKSUM, %edx
+	je search_rsdp_checkum_failed
+
 	/*
 	 * Check whether the ACPI version is 1.0 or 2.0.
 	 * If it is 2.0, call checksum to the extended part
 	 * of RSDP.
 	 */
-	addl $REVISION_OFFSET, %eax
-	cmpl $REVISION_OLD_ACPI, %eax
+	movl %eax, %edx
+	addl $REVISION_OFFSET, %edx
+	movl (%edx), %edx
+	cmpb $REVISION_OLD_ACPI, %dl
 	je search_rsdp_return
 
 	/*** TODO: Checksum for the extended area on ACPI 2.0. ***/
-	
+	nop
+
+search_rsdp_checkum_failed:
+	movl $INVALID_CHECKSUM, %eax
 	
 search_rsdp_return:
 	/*
