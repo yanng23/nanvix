@@ -206,7 +206,7 @@ _lookup_memory:
 
 _lookup_memory_start_loop:
 	cmpl %ebx, %eax
-	jg x_lookup_memory_end_loop
+	jg _lookup_memory_end_loop
 
 	/* RSDP Signature. */
 	movl $RSDP_SIG, %esi

@@ -1,4 +1,3 @@
-
 /*
  * Copyright(C) 2011-2016 Pedro H. Penna <pedrohenriquepenna@gmail.com>
  * 
@@ -21,6 +20,7 @@
 #ifndef MADT_H_
 #define MADT_H_
 
-#define MADT_SIG_SIZE 0x4 /* Number of bytes that signature has. */
+#define MADT_SIG_SIZE 0x4      /* Number of bytes that signature has. */
+#define MADT_LENGTH_OFFSET 0x4 /* The length entry offset. */
 
 #endif

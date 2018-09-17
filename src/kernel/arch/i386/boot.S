@@ -23,6 +23,7 @@
 #define _ASM_FILE_
 
 #include <i386/acpi/acpi.h>
+#include <i386/acpi/madt.h>	
 #include <i386/acpi/rsdp.h>
 #include <i386/acpi/rsdt.h>	
 #include <i386/i386.h>
@@ -124,8 +125,33 @@ start:
 	push %edx
 	
 	call get_madt
-	
 
+	/* Clean up stack. */
+	addl $0x8, %esp
+
+	/* Save MADT base address. */
+	movl %eax, %edx
+	
+	/* Get MADT length. */
+	addl $MADT_LENGTH_OFFSET, %eax
+
+	/* Pass the number of bytes to checksum. */
+	push (%eax)
+
+	/* Pass MADT base address as param. */
+	push %edx
+
+	/* Call checksum function. */
+	call acpi_checksum
+
+	/* Restore EDX content and clean up stack. */
+	pop  %edx
+	addl $0x4, %esp
+
+	/* If MADT isn't valid, continue to execute as a single core. */
+	cmpl $INVALID, %eax
+	je continue
+	
 	je continue
 xsdt:
 	/*** TODO: use XSDT if ACPI version is 2.0. ***/
