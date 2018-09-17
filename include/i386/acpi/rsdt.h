@@ -17,10 +17,12 @@
  * along with Nanvix. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef RSDP_T_
-#define RSDP_T_
+#ifndef RSDT_H_
+#define RSDT_H_
 
+#define RSDT_HEADER_SIZE 0x24    /* Header size, excluding entries. */
 #define RSDT_LENGTH_OFFSET 0x4   /* Length of the entire table. */
 #define RSDT_ENTRIES_OFFSET 0x24 /* Array of other SDTs. */
+#define RSDT_ENTRIE_SIZE 0x4     /* Num of bytes of each entry. */
 
 #endif
