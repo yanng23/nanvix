@@ -22,9 +22,9 @@
 /* Must come first. */
 #define _ASM_FILE_
 
-#include <i386/acpi.h>
-#include <i386/rsdp.h>
-#include <i386/rsdt.h>	
+#include <i386/acpi/acpi.h>
+#include <i386/acpi/rsdp.h>
+#include <i386/acpi/rsdt.h>	
 #include <i386/i386.h>
 #include <nanvix/config.h>
 #include <nanvix/mboot.h>
@@ -107,9 +107,24 @@ start:
 	cmpl $INVALID, %eax
 	je continue
 
-	/* Get MADT base address. */
+	/*
+	 * Get MADT base address.
+	 * 1º: Get the size of the array of entries
+	 * 2º: Get the start of the RSDT array of entries
+	 * 3º: Pass RSDT base address as param.
+	 * 4º: Call get_madt function
+	*/
+	movl %edx, %eax
+	addl $RSDT_LENGTH_OFFSET, %eax
+	movl (%eax), %eax
+	subl $RSDT_HEADER_SIZE, %eax
+	push %eax
+	
+	addl $RSDT_ENTRIES_OFFSET, %edx
+	push %edx
+	
 	call get_madt
-
+	
 
 	je continue
 xsdt:

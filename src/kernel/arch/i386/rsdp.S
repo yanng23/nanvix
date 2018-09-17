@@ -22,10 +22,10 @@
 /* Must come first */
 #define _ASM_FILE_
 
-#include <i386/acpi.h>
 #include <i386/asm_call.h>
 #include <i386/bios.h>
-#include <i386/rsdp.h>
+#include <i386/acpi/rsdp.h>
+#include <i386/acpi/acpi.h>	
 
 /* Exported symbols */
 .globl search_rsdp
@@ -177,7 +177,7 @@ _lookup_memory:
 	/* Save the old base pointer value. */
 	push %ebp
 
-	/* set the new base pointer value. */
+	/* Set the new base pointer value. */
 	movl %esp, %ebp
 
 	/*
@@ -206,18 +206,18 @@ _lookup_memory:
 
 _lookup_memory_start_loop:
 	cmpl %ebx, %eax
-	jg   _lookup_memory_end_loop
+	jg x_lookup_memory_end_loop
 
-	/* RSDP Signature */
+	/* RSDP Signature. */
 	movl $RSDP_SIG, %esi
 
-	/* Signature size */
+	/* Signature size. */
 	movl $RSDP_SIG_SIZE, %ecx
 	
-	/* Initial byte that we're going to compare */
+	/* Initial byte that we're going to compare. */
 	movl %eax, %edi
 
-	/* Comparing bytes */
+	/* Comparing bytes. */
 	rep cmpsb
 	je _lookup_memory_found
 	

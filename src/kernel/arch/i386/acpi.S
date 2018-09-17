@@ -22,8 +22,8 @@
 /* Must come first */
 #define _ASM_FILE_
 
-#include <i386/acpi.h>
 #include <i386/asm_call.h>
+#include <i386/acpi/acpi.h>
 
 /* Exported symbols */
 .globl acpi_checksum
