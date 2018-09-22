@@ -25,4 +25,27 @@
 #define RSDP_REVISION_OFFSET 0xF   /* RSDP revision that tell us the ACPI version. */
 #define RSDT_OFFSET 0x10           /* RSDT address offset. */
 
+#ifndef _ASM_FILE_
+#include <stdint.h>
+
+/*
+ * RSDP structure.
+ */
+struct rsdp
+{
+	/* Original RSDP structure. */
+	char signature[8];     /**< 8-byte string (not null terminated). */
+	uint8_t checksum;      /**< Includes the first 20 bytes. */
+	char oem_id[6];        /**< 6-byte string that identifies the OEM. */
+	uint8_t revision;      /**< 0 for ACPI 1.0, 2 for ACPI 2.0. */
+	uint32_t rsdt_address; /**< 32 bit physical address of the RSDT. */
+
+	/* Extended fields - present if revision >= 2. */
+	uint32_t length;       /**< The length of the table, in bytes. */
+	uint64 rsdt_address;   /**< 64 bit physical address of the XSDT. */
+	uint8_t ext_checksum;  /**< Checksum for the extended fields. */
+	uint8_t reserved[8];   /**< Reserved field. */
+} __attribute__((packed));
+
+#endif
 #endif
