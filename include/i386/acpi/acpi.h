@@ -43,7 +43,7 @@
 #define INVALID 0x0 /* Invalid structure. */
 #define VALID 0x1 /* Valid structure. */
 
-#ifned _ASM_FILE_
+#ifndef _ASM_FILE_
 #include <stdint.h>
 
 /*
