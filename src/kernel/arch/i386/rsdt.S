@@ -30,11 +30,6 @@
 /* Exported symbols */
 .globl get_madt
 
-/*============================================================================*
- *                              bootstrap section                             *
- *============================================================================*/
-.section bootstrap
-
 /* MADT Signature (1st field of MADT table) */
 MADT_SIG:	.string "APIC"
 	

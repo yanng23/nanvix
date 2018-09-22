@@ -28,11 +28,6 @@
 /* Exported symbols */
 .globl acpi_checksum
 
-/*============================================================================*
- *                              bootstrap section                             *
- *============================================================================*/
-.section bootstrap
-
 /**
  * @brief Assert that RSDP structure is valid.
  *

@@ -30,11 +30,6 @@
 /* Exported symbols */
 .globl search_rsdp
 
-/*============================================================================*
- *                              bootstrap section                             *
- *============================================================================*/
-.section bootstrap
-
 /* RSDP Signature (1st field of RSDP structure) */
 RSDP_SIG:	.string "RSD PTR "
 
