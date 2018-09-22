@@ -43,4 +43,23 @@
 #define INVALID 0x0 /* Invalid structure. */
 #define VALID 0x1 /* Valid structure. */
 
+#ifned _ASM_FILE_
+#include <stdint.h>
+
+/*
+ * A header that is common to all the SDT.
+ */
+struct acpi_sdt_header
+{
+	char signature[4];         /**< 4-byte string (not null terminated). */
+	uint32_t length;           /**< The length of the table, in bytes. */
+	uint8_t revision;          /**< 0 for ACPI 1.0, 2 for ACPI 2.0. */
+	uint8_t checksum;          /**< Includes the first 20 bytes. */
+	char oem_id[6];            /**< 6-byte string that identifies the OEM. */
+	char oem_table_id[8];      /**< Must match the OEM Table ID in the FADT.*/
+	uint32_t oem_revision;     /**< OEM revision for supplied OEM table id. */
+	uint32_t creator_id;       /**< Vendor ID of utility that created the table. */
+	uint32_t creator_revision; /**< Revision of utility that created the table. */
+} __attribute__((packed));
+
 #endif
