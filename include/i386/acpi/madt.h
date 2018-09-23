@@ -38,7 +38,7 @@ struct madt_ics_header {
 /**
  * Processor local APIC (type 0).
  */
-typedef struct madt_local_apic {
+struct madt_local_apic {
 	madt_ics_header header;
 	uint8_t proc_uid;
     uint8_t apic_id; /**< The processor's local APIC ID. */
@@ -48,8 +48,7 @@ typedef struct madt_local_apic {
 	 * Bits 1..31: Reserved (must be zero).
 	 */
     uint32_t flags;
-} acpi_madt_local_apic_t;
-
+} __attribute__((packed));
 
 /**
  * Multiple APIC Descriptor Table.
