@@ -46,7 +46,7 @@
 #ifndef _ASM_FILE_
 #include <stdint.h>
 
-/*
+/**
  * A header that is common to all the SDT.
  */
 struct acpi_sdt_header

@@ -28,7 +28,7 @@
 #ifndef _ASM_FILE_
 #include <stdint.h>
 
-/*
+/**
  * RSDP structure.
  */
 struct rsdp

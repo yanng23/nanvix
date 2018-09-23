@@ -29,7 +29,7 @@
 #include <i386/acpi/acpi.h>
 #include <stdint.h>
 
-/*
+/**
  * Root system descriptor table.
  */
 struct rsdt
