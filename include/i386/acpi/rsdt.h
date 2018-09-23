@@ -25,4 +25,21 @@
 #define RSDT_ENTRIES_OFFSET 0x24 /* Array of other SDTs. */
 #define RSDT_ENTRIE_SIZE 0x4     /* Num of bytes of each entry. */
 
+
+#ifndef _ASM_FILE_
+#include <i386/acpi/acpi.h>
+#include <stdint.h>
+
+/*
+ * Root system descriptor table.
+ */
+struct rsdt
+{
+	struct acpi_sdt_header header; /**< Header that is common to all the SDTs. */
+
+	/* An array of 32-bit physical addresses that point to other SDTs. */
+	uint32_t sdt_pointer[(header.length - sizeof(header)) / 8];
+} __attribute__((packed));
+
+
 #endif
