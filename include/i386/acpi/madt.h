@@ -97,7 +97,7 @@ struct madt_local_apic_nmi {
  */
 struct madt_local_apic_override {
 	madt_ics_header header;
-	uint16_t reserved; /**< Must be set to zero. */
+	uint8_t reserved[2]; /**< Must be set to zero. */
 	uint64_t local_apic_addr; /**< Physical address of Local APIC. */
 } __attribute__((packed));
 
@@ -106,6 +106,12 @@ struct madt_local_apic_override {
  */
 struct madt_io_sapic{
 	madt_ics_header header;
+	uint8_t io_apic_id; /**< IO SAPIC ID. */
+	uint8_t reserved; /**< Must be zero. */
+	uint32_t gs_interrupt_base; /**< The global system interrupt number where
+								   this I/O SAPIC’s interrupt inputs start. */
+	uint64_t io_sapic_addr; /**< The 64-bit physical address to access this I/O
+							   SAPIC. Each I/O SAPIC resides at a unique address. */
 } __attribute__((packed));
 
 /**
@@ -113,6 +119,13 @@ struct madt_io_sapic{
  */
 struct madt_local_sapic {
 	madt_ics_header header;
+	uint8_t proc_id;
+	uint8_t local_sapic_id; /**< The processor’s local SAPIC ID. */
+	uint8_t local_sapic_eid; /**< The processor’s local SAPIC EID. */
+	uint8_t reserved[3]; /**< Must be zero. */
+	uint32_t flags; /**< Local SAPIC flags. */
+	uint32_t proc_uid;
+	char proc_uid_str[];
 } __attribute__((packed));
 
 /**
@@ -120,6 +133,19 @@ struct madt_local_sapic {
  */
 struct madt_interrupt_src {
 	madt_ics_header header;
+	uint16_t flags; /**< MPS INTI flags. */
+	uint8_t interrupt_type; /**< 1 PMI
+							   2 INIT
+							   3 Corrected Platform Error Interrupt
+							   All other values are reserved. */
+	uint8_t proc_id; /**< Processor ID of destination. */
+	uint8_t proc_eid; /**< Processor EID of destination. */
+	uint8_t io_sapic_vec; /**< Value that OSPM must use to program the vector
+							 field of the I/O SAPIC redirection table entry for
+							 entries with the PMI interrupttype. */
+	uint32_t gs_interrupt; /**< The Global System Interrupt that this platform
+							  interrupt will signal. */
+	uint32_t platform_int_src_flags; /**< Platform Interrupt Source Flags. */
 } __attribute__((packed));
 
 /**
@@ -127,6 +153,10 @@ struct madt_interrupt_src {
  */
 struct madt_local_x2apic {
 	madt_ics_header header;
+	uint8_t reserved[2]; /**< Must be zero. */
+	uint32_t x2_apic_id; /**< The processor’s local x2APIC ID. */
+	uint32_t flags; /**< Same as local APIC flags. */
+	uint32_t proc_uid;
 } __attribute__((packed));
 
 /**
@@ -134,6 +164,13 @@ struct madt_local_x2apic {
  */
 struct madt_local_x2nmi {
 	madt_ics_header header;
+	uint16_t flags; /**< Same as MPS INTI flags. */
+	uint32_t proc_uid; /**< UID corresponding to the ID listed in the processor
+						  Device object. A value of 0xFFFFFFFF signifies that
+						  this applies to all processors in the machine. */
+	uint8_t x2_apic_lint; /**< Local x2APIC interrupt input LINTn to which NMI
+							 is connected. */
+	uint8_t reserved[3]; /**< Must be zero. */
 } __attribute__((packed));
 
 /**
@@ -141,13 +178,68 @@ struct madt_local_x2nmi {
  */
 struct madt_gicc {
 	madt_ics_header header;
+	uint8_t reserved[2]; /**< Must be zero. */
+	uint32_t id; /**< GIC's CPU Interface Number. In GICv1/v2 implementations,
+					this value matches the bit index of the associated processor
+					in the GIC distributor's GICD_ITARGETSR register. For GICv3/4
+					implementations this field must be provided by the platform,
+					if compatibility mode is supported. If it is not supported by
+					the implementation, then this field must be zero. */
+	
+	uint32_t proc_uid; /**< The OS associates this GICC Structure with a processor
+						  device object in the namespace when the _UID child object
+						  of the processor device evaluates to a numeric value that
+						  matches the numeric value in this field. */
+	
+	uint32_t flags;
+	uint32_t parking_prot_version; /**< Version of the ARM-Processor Parking Protocol
+									  implemented. */
+	
+	uint32_t perf_interrupt_gsiv; /**< The GSIV used for Performance Monitoring
+									 Interrupts. */
+	
+	uint64_t parked_address; /**< The 64-bit physical address of the processor’s
+								Parking Protocol mailbox. */
+	
+	uint64_t phys_address; /**< On GICv1/v2 systems and GICv3/4 systems in GICv2
+							  compatibility mode, this field holds the 64-bit physical
+							  address at which the processor can access this GIC CPU
+							  Interface. If provided here, the "Local Interrupt
+							  Controller Address" field in the MADT must be ignored by
+							  the OSPM. */
+
+	uint64_t gicv; /**< Address of the GIC virtual CPU interface registers. If the
+					  platform is not presenting a GICv2 with virtualization extensions
+					  this field can be 0. */
+
+	uint64_t gich; /**< Address of the GIC virtual interface control block registers.
+					  If the platform is not presenting a GICv2 with virtualization
+					  extensions this field can be 0. */
+
+	uint32_t vgic_interrupt; /**< GSIV for Virtual GIC maintenance interrupt. */
+	uint64_t gicr_addr;
+	uint64_t mpidr;
+	uint8_t proc_power_efficiency;
+	uint8_t reserved[3]; /**< Must be zero. */
 } __attribute__((packed));
 
 /**
  * GIC Distributor (type C).
  */
-struct madt_gicd {
+struct madt_gic_dist {
 	madt_ics_header header;
+	uint8_t reserved_1[2]; /**< Must be zero. */
+	uint32_t id; /**< This GIC Distributor’s hardware ID. */
+	uint64_t phys_addr; /**< The 64-bit physical address for this Distributor. */
+	uint32_t sys_vector_base; /**< Reserved - Must be zero. */
+	uint8_t gic_version; /**< 0x00: No GIC version is specified, fall back to
+							hardware discovery for GIC version
+							0x01: GICv1
+							0x02: GICv2
+							0x03: GICv3
+							0x04: GICv4
+							0x05-0xFF, Reserved for future use. */
+	uint8_t reserved_2[3]; /**< Must be zero. */
 } __attribute__((packed));
 
 /**
@@ -155,13 +247,29 @@ struct madt_gicd {
  */
 struct madt_gic_msi {
 	madt_ics_header header;
+	uint8_t reserved[2]; /**< Must be zero. */
+	uint32_t frame_id; /**< GIC MSI Frame ID. In a system with multiple GIC MSI
+						  frames, this value must be unique to each one. */
+	uint64_t phys_addr; /**< The 64-bit physical address for this MSI Frame. */
+	uint32_t flags; /**< GIC MSI Frame Flags. */
+	uint16_t spi_count; /**< SPI Count used by this frame. Unless the SPI Count
+						   Select flag is set to 1 this value should match the lower
+						   16 bits of the MSI_TYPER register in the frame. */
+	uint16_t spi_base; /**< SPI Base used by this frame. Unless the SPI Base Select flag
+						  is set to 1 this value should match the upper 16 bits of the
+						  MSI_TYPER register in the frame. */
 } __attribute__((packed));
 
 /**
  * GIC Redistributor (type E).
  */
-struct madt_gicred {
+struct madt_gic_red {
 	madt_ics_header header;
+	uint8_t reserved[2]; /**< Must be zero. */
+	uint64_t phys_range_addr; /**< The 64-bit physical address of a page range
+								 containing all GIC Redistributors. */
+	uint32_t range_length; /**< Length of the GIC Redistributor Discovery
+							  page range. */
 } __attribute__((packed));
 
 /**
@@ -169,6 +277,10 @@ struct madt_gicred {
  */
 struct madt_its {
 	madt_ics_header header;
+	uint8_t reserved[2]; /**< Must be zero. */
+	uint32_t id; /**< GIC ITS ID. In a system with multiple GIC ITS units,
+					this value must be unique to each one. */
+	
 } __attribute__((packed));
 
 /**
@@ -185,5 +297,8 @@ struct madt
 					   The 8259 vectors must be disabled (that is, masked) when
 					   enabling the ACPI APIC operation). Bits 1..31: Reserved
 					   (this value is zero). */
+	uint64_t phys_addr; /**< The 64-bit physical address for the Interrupt
+						   Translation Service. */
+	uint8_t reserved[4]; /**< Must be zero. */
 } __attribute__((packed));
 #endif
