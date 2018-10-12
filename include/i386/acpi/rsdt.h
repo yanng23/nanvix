@@ -43,3 +43,4 @@ struct rsdt
 } __attribute__((packed));
 
 #endif
+#endif

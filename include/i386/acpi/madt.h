@@ -301,4 +301,6 @@ struct madt
 						   Translation Service. */
 	uint8_t reserved[4]; /**< Must be zero. */
 } __attribute__((packed));
+
+#endif
 #endif

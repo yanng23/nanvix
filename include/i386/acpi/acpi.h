@@ -63,3 +63,4 @@ struct acpi_sdt_header
 } __attribute__((packed));
 
 #endif
+#endif
