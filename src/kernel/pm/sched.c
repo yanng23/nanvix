@@ -33,6 +33,70 @@
 PUBLIC void (*yield)(void);
 
 /**
+ * @brief Calculates the effective priority of a process.
+ *
+ * @details Calculates effective priority of a process by considering
+ * its static, dynamic and nice priorities. The lower this value is,
+ * the higher is the effective priority.
+ *
+ * @param p Target process.
+ *
+ * @returns An integer value (negative or positive) that tells what is
+ * the effective priority of @p p.
+ */
+#define PRIORITY_PROCESS(p)                    \
+	((p)->nice - (p)->counter)
+
+/**
+ * @brief Checks if the current next process should be updated.
+ *
+ * @details The next chosen process should be one of those with the
+ * highest priority found which has been waiting for the longest time.
+ *
+ * @param p1 Process currently selected to be executed.
+ * @param p2 Candidate for taking the place of p1 being selected to execute.
+ *
+ * @returns True if should update the next process to be executed, and
+ * false otherwise.
+ */
+#define HIGHER_PRIORITY_PROCESS(p1, p2)                       \
+	 (PRIORITY_PROCESS(p2)  < PRIORITY_PROCESS(p1) ||         \
+	 (PRIORITY_PROCESS(p2) == PRIORITY_PROCESS(p1) &&         \
+	  (p2)->counter >= (p1)->counter))
+
+/**
+ * @brief Calculates the effective priority of a thread.
+ *
+ * @details Calculates effective priority of a thread by considering
+ * its static and dynamic. The lower this value is, the higher is the
+ * effective priority.
+ *
+ * @param t Target thread.
+ *
+ * @returns An integer value (negative or positive) that tells what is
+ * the effective priority of @p t.
+ */
+#define PRIORITY_THREAD(t)                     \
+	((t)->priority - (t)->counter)
+
+/**
+ * @brief Checks if the current next thread should be updated.
+ *
+ * @details The next chosen thread should be one of those with the
+ * highest priority found which has been waiting for the longest time.
+ *
+ * @param t1 Thread currently selected to be executed.
+ * @param t2 Candidate for taking the place of t1 being selected to execute.
+ *
+ * @returns True if should update the next thread to be executed, and
+ * false otherwise.
+ */
+#define HIGHER_PRIORITY_THREAD(t1, t2)                        \
+	 (PRIORITY_THREAD(t2)  < PRIORITY_THREAD(t1) ||           \
+	 (PRIORITY_THREAD(t2) == PRIORITY_THREAD(t1) &&           \
+	  (t2)->counter > (t1)->counter))
+
+/**
  * @brief Schedules a thread to execution.
  * 
  * @param thrd Thread to be scheduled.
@@ -231,12 +295,9 @@ PUBLIC void yield_up(void)
 		/* Skip non-ready thread. */
 		if (t->state != THRD_READY)
 			continue;
-
-		/*
-		 * Thread with higher
-		 * waiting time found.
-		 */
-		if (t->counter > next_thrd->counter)
+		
+		/* Higher priority thread found. */
+		if (HIGHER_PRIORITY_THREAD(next_thrd, t))
 		{
 			next_thrd->counter++;
 			next_thrd = t;
@@ -378,11 +439,8 @@ PUBLIC void yield_smp(void)
 			continue;
 		}
 		
-		/*
-		 * Process with higher
-		 * waiting time found.
-		 */
-		if (p->counter >= next->counter)
+		/* Higher priority process found. */
+		if (HIGHER_PRIORITY_PROCESS(next, p))
 		{
 			next->counter++;
 			next = p;
