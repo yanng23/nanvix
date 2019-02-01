@@ -110,18 +110,25 @@ PUBLIC void yield(void)
 			next = p;
 		}
 		else if (p->priority == next->priority){
-			//If they have the same priority take the one that have been waiting for more time
-			if (p->counter > next->counter){
+			//If they have the same priority take the one with the lowest nice
+			if(p->nice < next->nice){
 				next->counter++;
 				next = p;
 			}
-			//We dont execute p so we increment his counter
+			//If they have the same priority and nice, take the one that have been waiting for more time
+			else if(p->nice == next->nice){
+				if(p->counter > next->counter){
+					next->counter++;
+					next = p;
+				}
+				else{
+					p->counter++;
+				}
+			}
 			else{
 				p->counter++;
 			}
-
 		}
-		//We dont execute p so we increment his counter
 		else{
 			p->counter++;
 		}
