@@ -103,13 +103,28 @@ PUBLIC void yield(void)
 			next->counter++;
 			next = p;
 		}
-			
-		/*
-		 * Increment waiting
-		 * time of process.
-		 */
-		else
+
+		//Process with higher priority found
+		if (p->priority < next->priority){
+			next->counter++;
+			next = p;
+		}
+		else if (p->priority == next->priority){
+			//If they have the same priority take the one that have been waiting for more time
+			if (p->counter > next->counter){
+				next->counter++;
+				next = p;
+			}
+			//We dont execute p so we increment his counter
+			else{
+				p->counter++;
+			}
+
+		}
+		//We dont execute p so we increment his counter
+		else{
 			p->counter++;
+		}
 	}
 	
 	/* Switch to next process. */
