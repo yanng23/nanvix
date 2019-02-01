@@ -21,6 +21,7 @@
 #include <nanvix/clock.h>
 #include <nanvix/const.h>
 #include <nanvix/hal.h>
+#include <nanvix/klib.h>
 #include <nanvix/pm.h>
 #include <signal.h>
 
@@ -87,31 +88,29 @@ PUBLIC void yield(void)
 	}
 
 	/* Choose a process to run next. */
+	/* Count the total number of tickets */
+	int nbr_total_tickets = 0;
 	next = IDLE;
-	for (p = FIRST_PROC; p <= LAST_PROC; p++)
-	{
-		/* Skip non-ready process. */
-		if (p->state != PROC_READY)
+	for (p = FIRST_PROC; p < LAST_PROC; p++){
+		if (!IS_VALID(p))
 			continue;
-		
-		/*
-		 * Process with higher
-		 * waiting time found.
-		 */
-		if (p->counter > next->counter)
-		{
-			next->counter++;
-			next = p;
-		}
-			
-		/*
-		 * Increment waiting
-		 * time of process.
-		 */
-		else
-			p->counter++;
+		nbr_total_tickets += p->nbr_tickets;
 	}
-	
+
+	//Pick one randomly
+	int win = (krand() % nbr_total_tickets) + 1;
+	//kprintf("Total: %d/%d, picked: %d ", nprocs, nbr_total_tickets, win);
+	//Find the corresponding process
+	int  i = 0;
+	for (p = FIRST_PROC; p <= LAST_PROC; p++){
+		if(win > i && win <= (i + p->nbr_tickets)){
+			next = p;
+			//kprintf("process: %d\n", p->pid);
+			break;
+		}
+		i += p->nbr_tickets;
+	}
+
 	/* Switch to next process. */
 	next->priority = PRIO_USER;
 	next->state = PROC_RUNNING;

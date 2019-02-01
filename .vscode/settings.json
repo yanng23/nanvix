@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "clock.h": "c",
+        "stat.h": "c",
+        "pm.h": "c",
+        "klib.h": "c"
+    }
+}

@@ -18,7 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Nanvix. If not, see <http://www.gnu.org/licenses/>.
  */
-
+#include <nanvix/clock.h>
 #include <nanvix/config.h>
 #include <nanvix/const.h>
 #include <nanvix/dev.h>
@@ -30,6 +30,7 @@
 #include <sys/stat.h>
 #include <signal.h>
 #include <limits.h>
+#include <nanvix/klib.h>
 
 /**
  * @brief Idle process page directory.
@@ -66,7 +67,7 @@ PUBLIC pid_t next_pid = 0;
  */
 PUBLIC unsigned nprocs = 0;
 
-/**
+/**c
  * @brief Initializes the process management system.
  */
 PUBLIC void pm_init(void)
@@ -74,6 +75,8 @@ PUBLIC void pm_init(void)
 	int i;             /* Loop index.      */
 	struct process *p; /* Working process. */
 	
+	ksrand(CURRENT_TIME);
+
 	/* Initialize the process table. */
 	for (p = FIRST_PROC; p <= LAST_PROC; p++)
 		p->flags = 0, p->state = PROC_DEAD;
@@ -120,6 +123,7 @@ PUBLIC void pm_init(void)
 	IDLE->alarm = 0;
 	IDLE->next = NULL;
 	IDLE->chain = NULL;
+	IDLE->nbr_tickets = 0;
 	
 	nprocs++;
 
