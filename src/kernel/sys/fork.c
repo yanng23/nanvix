@@ -150,7 +150,7 @@ found:
 	proc->cutime = 0;
 	proc->cktime = 0;
 	proc->priority = curr_proc->priority;
-	proc->nbr_tickets = 1; /*(proc->priority - 60)/(-20);*/
+	proc->nbr_tickets = ((proc->priority + proc->nice -60)/-10) + 1;
 	proc->nice = curr_proc->nice;
 	proc->alarm = 0;
 	proc->next = NULL;

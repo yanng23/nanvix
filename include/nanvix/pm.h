@@ -206,6 +206,7 @@
 		struct process **chain;  /**< Sleeping chain.         */
 		/**@}*/
 
+		//lottery scheduling
 		int nbr_tickets;
 	};
 	

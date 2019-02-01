@@ -92,23 +92,27 @@ PUBLIC void yield(void)
 	int nbr_total_tickets = 0;
 	next = IDLE;
 	for (p = FIRST_PROC; p < LAST_PROC; p++){
-		if (!IS_VALID(p))
+		if (p->state != PROC_READY)
 			continue;
+
 		nbr_total_tickets += p->nbr_tickets;
 	}
 
-	//Pick one randomly
-	int win = (krand() % nbr_total_tickets) + 1;
-	//kprintf("Total: %d/%d, picked: %d ", nprocs, nbr_total_tickets, win);
-	//Find the corresponding process
-	int  i = 0;
-	for (p = FIRST_PROC; p <= LAST_PROC; p++){
-		if(win > i && win <= (i + p->nbr_tickets)){
-			next = p;
-			//kprintf("process: %d\n", p->pid);
-			break;
+	if(nbr_total_tickets != 0){
+		//Pick one randomly
+		int win = (krand() % nbr_total_tickets) + 1;
+		//Find the corresponding process
+		int  i = 0;
+		for (p = FIRST_PROC; p <= LAST_PROC; p++){
+			if (p->state != PROC_READY)
+				continue;
+
+			i += p->nbr_tickets;
+			if(win <= i){
+				next = p;
+				break;
+			}
 		}
-		i += p->nbr_tickets;
 	}
 
 	/* Switch to next process. */
