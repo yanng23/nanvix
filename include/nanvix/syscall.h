@@ -264,6 +264,12 @@
 	 */
 	EXTERN int sys_gticks(void);
 
+	/* semaphore */
+	EXTERN int semget(unsigned key);
+	EXTERN int semctl(int semid, int cmd, int val);
+	EXTERN int semop(int semid, int op);
+
+
 #endif /* _ASM_FILE_ */
 
 #endif /* NANVIX_SYSCALL_H_ */
